@@ -1,0 +1,11 @@
+node_modules/
+dist/
+*.log
+.movie-hub-dev.*.log
+server/data/
+media/*
+!media/.gitkeep
+tools/
+screenshots/
+.playwright-cli/
+var/

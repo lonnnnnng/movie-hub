@@ -1,0 +1,49 @@
+{
+  "name": "movie-hub",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:api": "tsx watch server/index.ts",
+    "dev:web": "vite --host 0.0.0.0",
+    "service": "node scripts/service.mjs",
+    "service:start": "node scripts/service.mjs start",
+    "service:stop": "node scripts/service.mjs stop",
+    "service:restart": "node scripts/service.mjs restart",
+    "service:status": "node scripts/service.mjs status",
+    "service:logs": "node scripts/service.mjs logs",
+    "check": "tsc --noEmit",
+    "build": "tsc && vite build",
+    "doctor": "node scripts/doctor.mjs",
+    "test:subscription": "tsx --test server/subscription.test.ts",
+    "verify:tool-args": "tsx scripts/verify-tool-args.ts",
+    "verify": "npm run check && npm run build && npm run doctor",
+    "preview": "vite preview --host 0.0.0.0",
+    "start": "tsx server/index.ts"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^5.0.4",
+    "better-sqlite3": "^12.10.0",
+    "concurrently": "^9.2.1",
+    "express": "^5.1.0",
+    "fast-xml-parser": "^5.2.5",
+    "lucide-react": "^0.545.0",
+    "morgan": "^1.10.1",
+    "tsx": "^4.20.6",
+    "video.js": "^8.23.7",
+    "vite": "^7.1.9",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/express": "^5.0.3",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^24.7.2",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "typescript": "^5.9.3"
+  }
+}
