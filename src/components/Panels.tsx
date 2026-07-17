@@ -4,7 +4,7 @@ import type { HubStats, LocalVideo } from "../types";
 export function StatDeck({ stats }: { stats: HubStats | null }) {
   const cards = [
     { label: "资源站", value: stats ? `${stats.enabledSites}/${stats.sites}` : "--", icon: <Server size={20} />, tone: "teal" },
-    { label: "追剧", value: stats?.watchlist ?? "--", icon: <Bell size={20} />, tone: "red" },
+    { label: "追剧", value: stats?.watchlist ?? "--", icon: <Bell size={20} />, tone: "accent" },
     { label: "本地库", value: stats?.library ?? "--", icon: <HardDrive size={20} />, tone: "gold" }
   ];
 

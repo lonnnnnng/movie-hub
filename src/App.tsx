@@ -9,11 +9,13 @@ import {
   Home,
   Loader2,
   Menu,
+  Moon,
   RefreshCw,
   Search,
   ServerCog,
   Settings2,
   Share2,
+  Sun,
   X
 } from "lucide-react";
 import { Component, lazy, Suspense, useEffect, useMemo, useRef, useState, type ErrorInfo, type ReactNode } from "react";
@@ -77,6 +79,7 @@ type ToastItem = Toast & {
 const notificationPageSizes = [8, 12, 20, 32] as const;
 type NotificationFilter = "all" | "unread" | HubNotification["category"];
 type NotificationPageSize = (typeof notificationPageSizes)[number];
+type ThemeMode = "dark" | "light";
 
 const HomePage = lazy(() => import("./pages/HomePage").then((module) => ({ default: module.HomePage })));
 const SearchPage = lazy(() => import("./pages/SearchPage").then((module) => ({ default: module.SearchPage })));
@@ -163,6 +166,7 @@ export function App() {
   const [notificationFilter, setNotificationFilter] = useStoredState<NotificationFilter>("movie-hub.notifications.filter", "all", {
     validate: isNotificationFilter
   });
+  const [theme, setTheme] = useStoredState<ThemeMode>("movie-hub.theme", "dark", { validate: isThemeMode });
   const [notificationPageSize, setNotificationPageSize] = useStoredState<NotificationPageSize>("movie-hub.notifications.pageSize", 12, {
     validate: isNotificationPageSize
   });
@@ -217,6 +221,11 @@ export function App() {
   const activeDownloadCount = state.downloads.filter((task) => task.status === "queued" || task.status === "downloading").length;
   const readyToolCount = toolsStatus ? [toolsStatus.ffmpeg, toolsStatus.ffprobe, toolsStatus.nM3u8DlRe].filter((tool) => tool.ok).length : 0;
   const toolWarning = toolWarningText(toolsStatus);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+  }, [theme]);
 
   function notify(message: string, tone: Toast["tone"] = "good") {
     const id = `toast-${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -498,6 +507,19 @@ export function App() {
           <MenuButton active={route.name === "tracking"} icon={<Bell size={18} />} label={`剧集追踪${unreadWatch ? ` · ${unreadWatch}` : ""}`} onClick={() => navigate({ name: "tracking" })} />
           <MenuButton active={route.name === "downloads"} icon={<DownloadCloud size={18} />} label={`下载管理${activeDownloadCount ? ` · ${activeDownloadCount}` : ""}`} onClick={() => navigate({ name: "downloads" })} />
           <MenuButton active={route.name === "settings"} icon={<Settings2 size={18} />} label="系统设置" onClick={() => navigate({ name: "settings" })} />
+          <button
+            className="theme-toggle"
+            type="button"
+            aria-pressed={theme === "light"}
+            onClick={() => setTheme((current) => (current === "dark" ? "light" : "dark"))}
+            title={theme === "dark" ? "切换到亮色模式" : "切换到暗色模式"}
+          >
+            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+            <span>{theme === "dark" ? "亮色模式" : "暗色模式"}</span>
+            <span className="theme-switch" aria-hidden="true">
+              <span />
+            </span>
+          </button>
         </nav>
 
         <div className="sidebar-runtime" role="status">
@@ -879,6 +901,10 @@ function pageSection(route: Route) {
     settings: "System",
     detail: "Playback"
   }[route.name];
+}
+
+function isThemeMode(value: unknown): value is ThemeMode {
+  return value === "dark" || value === "light";
 }
 
 function NotificationDetailCard({
