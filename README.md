@@ -81,6 +81,16 @@ dist/               前端构建产物
 
 如需改端口，可通过环境变量 `WEB_PORT` 和 `PORT` 调整。服务脚本、Vite 代理和后端 API 都会读取这两个变量。
 
+生产部署时可以只运行 Express 后端；它会同时提供 `dist/` 前端、API、视频和 HLS 路由。例如把 API 和主访问地址设为 `4444`：
+
+```bash
+PORT=4444 node_modules/.bin/tsx server/index.ts
+```
+
+### Emby 同步
+
+设置页的 Emby 配置会把已完成下载导出为 `tvshow.nfo`、分集 `.nfo` 和 `.strm`。将 Emby 剧集库指向 `embyOutputDir`，并填写 Emby Server URL、API Key 以及 Emby 可访问的 Movie Hub 地址；下载完成后会自动写入并请求 `/Library/Refresh`。已有下载可以在设置页点击“立即同步已有下载”。
+
 ## 安装与启动
 
 ```bash

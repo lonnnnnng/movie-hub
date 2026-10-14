@@ -8,6 +8,7 @@ import { cancelDownloadTask, createDownloadTask, resumeDownloadTask } from "./do
 import { fetchDetail, fetchTrendingFromSite, searchSite, siteHealthUrl } from "./cms";
 import { fetchDoubanTrending, fetchDoubanTrendingPage, searchDoubanSubjects } from "./douban";
 import { getReadOnlyFtpShareState, startReadOnlyFtpShare } from "./ftp";
+import { getEmbyStatus, syncAllCompletedDownloads } from "./emby";
 import { inspectFfmpeg } from "./ffmpeg";
 import { buildLocalHls, getLanUrls, scanLibrary, streamLocalVideo } from "./library";
 import { inspectFfprobe } from "./ffprobe";
@@ -110,7 +111,13 @@ const settingsSchema = z.object({
   m3u8DownloaderMuxAfterDone: z.string().trim().max(500).optional(),
   m3u8DownloaderExtraArgs: z.string().trim().max(3000).optional(),
   shareSmbUrl: z.string().trim().max(500).optional(),
-  shareFtpUrl: z.string().trim().max(500).optional()
+  shareFtpUrl: z.string().trim().max(500).optional(),
+  embyEnabled: z.boolean().optional(),
+  embyOutputDir: z.string().trim().max(1000).optional(),
+  embyBaseUrl: z.string().trim().max(2048).optional(),
+  embyServerUrl: z.string().trim().max(2048).optional(),
+  embyApiKey: z.string().trim().max(2048).optional(),
+  embySyncOnDownload: z.boolean().optional()
 });
 
 function uniqueCatalogItems(items: CatalogItem[]) {
@@ -1628,6 +1635,15 @@ app.put("/api/settings", async (req, res) => {
   res.json({ settings: state.settings });
 });
 
+app.get("/api/emby/status", async (_, res) => {
+  res.json(await getEmbyStatus());
+});
+
+app.post("/api/emby/sync", async (_, res) => {
+  const result = await syncAllCompletedDownloads();
+  res.json(result);
+});
+
 app.get("/api/tools/status", async (_, res) => {
   res.json(await getToolsStatus());
 });
@@ -2532,4 +2548,9 @@ async function settleStaleLocalHlsJobs() {
         : job
     );
   });
+  setTimeout(() => {
+    void syncAllCompletedDownloads().catch((error) => {
+      console.error("Initial Emby sync failed:", error);
+    });
+  }, 5000);
 }

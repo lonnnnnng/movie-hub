@@ -1,7 +1,7 @@
 import { Activity, Archive, CheckCircle2, ClipboardPaste, Clock3, Copy, Cpu, Database, Download, HardDrive, Loader2, PlayCircle, RefreshCw, Save, Search, Settings2, TerminalSquare, Trash2, Wrench, X } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState, type ReactNode } from "react";
 import { ServerCard, StatDeck } from "../components/Panels";
-import { downloadStateBackup, getRuntimeStatus, getToolsStatus, restoreStateBackup } from "../lib/api";
+import { downloadStateBackup, getRuntimeStatus, getToolsStatus, restoreStateBackup, syncEmby } from "../lib/api";
 import { fileSize, formatTime } from "../lib/format";
 import {
   MAX_PLAYBACK_PROGRESS_ENTRIES,
@@ -69,7 +69,13 @@ function settingsDraft(settings: AppSettings) {
     m3u8DownloaderMuxAfterDone: settings.m3u8DownloaderMuxAfterDone ?? "",
     m3u8DownloaderExtraArgs: settings.m3u8DownloaderExtraArgs ?? "",
     shareSmbUrl: settings.shareSmbUrl ?? "",
-    shareFtpUrl: settings.shareFtpUrl ?? ""
+    shareFtpUrl: settings.shareFtpUrl ?? "",
+    embyEnabled: settings.embyEnabled,
+    embyOutputDir: settings.embyOutputDir,
+    embyBaseUrl: settings.embyBaseUrl,
+    embyServerUrl: settings.embyServerUrl,
+    embyApiKey: settings.embyApiKey,
+    embySyncOnDownload: settings.embySyncOnDownload
   };
 }
 
@@ -251,11 +257,26 @@ export function SettingsPage({ state, stats, initialToolStatus, onSaveSettings, 
         m3u8DownloaderMuxAfterDone: draft.m3u8DownloaderMuxAfterDone.trim(),
         m3u8DownloaderExtraArgs: draft.m3u8DownloaderExtraArgs.trim(),
         shareSmbUrl: draft.shareSmbUrl.trim(),
-        shareFtpUrl: draft.shareFtpUrl.trim()
+        shareFtpUrl: draft.shareFtpUrl.trim(),
+        embyEnabled: draft.embyEnabled,
+        embyOutputDir: draft.embyOutputDir.trim(),
+        embyBaseUrl: draft.embyBaseUrl.trim(),
+        embyServerUrl: draft.embyServerUrl.trim(),
+        embyApiKey: draft.embyApiKey.trim(),
+        embySyncOnDownload: draft.embySyncOnDownload
       });
       await refreshTools();
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function runEmbySync() {
+    try {
+      const result = await syncEmby();
+      onNotify(result.message ?? `Emby 已同步 ${result.synced} 个文件${result.failed ? `，失败 ${result.failed} 个` : ""}`, result.failed ? "warn" : "good");
+    } catch (error) {
+      onNotify(error instanceof Error ? error.message : "Emby 同步失败", "bad");
     }
   }
 
@@ -678,6 +699,56 @@ export function SettingsPage({ state, stats, initialToolStatus, onSaveSettings, 
                     onChange={(value) => setDraft({ ...draft, shareFtpUrl: value })}
                     placeholder="ftp://192.168.1.10/media"
                   />
+                </div>
+              </section>
+
+              <section className="panel settings-card">
+                <div className="panel-title">
+                  <div>
+                    <p className="eyebrow">Emby</p>
+                    <h3>Emby 剧库同步</h3>
+                  </div>
+                  <PlayCircle size={20} />
+                </div>
+                <div className="settings-form compact">
+                  <label className="toggle-row">
+                    <span>启用 Emby 同步</span>
+                    <input type="checkbox" checked={draft.embyEnabled} onChange={(event) => setDraft({ ...draft, embyEnabled: event.target.checked })} />
+                  </label>
+                  <label className="toggle-row">
+                    <span>下载完成后立即同步</span>
+                    <input type="checkbox" checked={draft.embySyncOnDownload} onChange={(event) => setDraft({ ...draft, embySyncOnDownload: event.target.checked })} />
+                  </label>
+                  <TextField
+                    label="导出目录"
+                    value={draft.embyOutputDir}
+                    onChange={(value) => setDraft({ ...draft, embyOutputDir: value })}
+                    placeholder="/home/lee/movie-hub/media/Emby"
+                    hint="把这个目录添加到 Emby 的剧集库。"
+                  />
+                  <TextField
+                    label="Movie Hub 播放地址"
+                    value={draft.embyBaseUrl}
+                    onChange={(value) => setDraft({ ...draft, embyBaseUrl: value })}
+                    placeholder="http://192.168.1.2:8787"
+                    hint="必须是 Emby 主机能访问的地址。"
+                  />
+                  <TextField
+                    label="Emby Server URL"
+                    value={draft.embyServerUrl}
+                    onChange={(value) => setDraft({ ...draft, embyServerUrl: value })}
+                    placeholder="http://127.0.0.1:8096"
+                  />
+                  <TextField
+                    label="Emby API Key"
+                    value={draft.embyApiKey}
+                    onChange={(value) => setDraft({ ...draft, embyApiKey: value })}
+                    placeholder="粘贴 Emby API Key"
+                  />
+                  <button className="tool-button subtle" type="button" onClick={() => void runEmbySync()} disabled={!draft.embyEnabled}>
+                    <RefreshCw size={16} />
+                    立即同步已有下载
+                  </button>
                 </div>
               </section>
             </div>

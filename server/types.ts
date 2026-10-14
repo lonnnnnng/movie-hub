@@ -63,6 +63,12 @@ export type AppSettings = {
   m3u8DownloaderExtraArgs?: string;
   shareSmbUrl?: string;
   shareFtpUrl?: string;
+  embyEnabled: boolean;
+  embyOutputDir: string;
+  embyBaseUrl: string;
+  embyServerUrl: string;
+  embyApiKey: string;
+  embySyncOnDownload: boolean;
 };
 
 export type Episode = {

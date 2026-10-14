@@ -7,6 +7,7 @@ import { findNm3u8DlRe, spawnNm3u8DlRe } from "./nm3u8dl";
 import { buildFfmpegDownloadArgs, buildNm3u8DlReArgs } from "./toolArgs";
 import { hlsDir, mediaDir } from "./paths";
 import { addNotification, readState, upsertDownload } from "./store";
+import { syncCompletedDownload } from "./emby";
 
 const activeDownloads = new Set<string>();
 const downloadProcesses = new Map<string, ChildProcess>();
@@ -672,6 +673,10 @@ async function completeTask(task: DownloadTask, outputDir: string, outputPath: s
     category: "download",
     taskId: task.id,
     sourceId: task.sourceId
+  });
+  // long：下载已经成功落盘后再同步 Emby；外部服务失败只能提示，不能改变下载成功状态。
+  void syncCompletedDownload(completedTask).catch((error) => {
+    console.error(`Emby sync failed for ${task.id}:`, error);
   });
 }
 

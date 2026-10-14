@@ -102,6 +102,10 @@ export function saveSettings(settings: Partial<AppSettings>) {
   return api.send<{ settings: AppSettings }>("/api/settings", "PUT", settings);
 }
 
+export function syncEmby() {
+  return api.send<{ enabled: boolean; synced: number; failed: number; refreshed: boolean; message?: string }>("/api/emby/sync", "POST");
+}
+
 export function getToolsStatus() {
   return api.get<ToolsStatusResponse>("/api/tools/status");
 }

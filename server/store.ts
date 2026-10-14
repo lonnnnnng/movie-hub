@@ -58,7 +58,13 @@ const blankState = (): AppState => ({
     m3u8DownloaderMuxAfterDone: "",
     m3u8DownloaderExtraArgs: "",
     shareSmbUrl: "",
-    shareFtpUrl: ""
+    shareFtpUrl: "",
+    embyEnabled: false,
+    embyOutputDir: path.resolve("media", "Emby"),
+    embyBaseUrl: "",
+    embyServerUrl: "",
+    embyApiKey: "",
+    embySyncOnDownload: true
   },
   watchlist: [],
   downloads: [],
@@ -218,7 +224,13 @@ function normalizeState(parsed: Partial<AppState>): AppState {
       m3u8DownloaderMuxAfterDone: parsed.settings?.m3u8DownloaderMuxAfterDone ?? "",
       m3u8DownloaderExtraArgs: parsed.settings?.m3u8DownloaderExtraArgs ?? "",
       shareSmbUrl: parsed.settings?.shareSmbUrl ?? "",
-      shareFtpUrl: parsed.settings?.shareFtpUrl ?? ""
+      shareFtpUrl: parsed.settings?.shareFtpUrl ?? "",
+      embyEnabled: parsed.settings?.embyEnabled ?? false,
+      embyOutputDir: parsed.settings?.embyOutputDir ?? path.resolve("media", "Emby"),
+      embyBaseUrl: parsed.settings?.embyBaseUrl ?? "",
+      embyServerUrl: parsed.settings?.embyServerUrl ?? "",
+      embyApiKey: parsed.settings?.embyApiKey ?? "",
+      embySyncOnDownload: parsed.settings?.embySyncOnDownload ?? true
     },
     watchlist: parsed.watchlist ?? [],
     downloads: parsed.downloads ?? [],

@@ -114,7 +114,13 @@ const emptyState: AppState = {
     m3u8DownloaderMuxAfterDone: "",
     m3u8DownloaderExtraArgs: "",
     shareSmbUrl: "",
-    shareFtpUrl: ""
+    shareFtpUrl: "",
+    embyEnabled: false,
+    embyOutputDir: "media/Emby",
+    embyBaseUrl: "",
+    embyServerUrl: "",
+    embyApiKey: "",
+    embySyncOnDownload: true
   },
   watchlist: [],
   downloads: [],
