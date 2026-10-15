@@ -1,5 +1,5 @@
 import { Activity, Archive, CheckCircle2, ClipboardPaste, Clock3, Copy, Cpu, Database, Download, HardDrive, Loader2, PlayCircle, RefreshCw, Save, Search, Settings2, TerminalSquare, Trash2, Wrench, X } from "lucide-react";
-import { FormEvent, useEffect, useMemo, useState, type ReactNode } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { ServerCard, StatDeck } from "../components/Panels";
 import { downloadStateBackup, getRuntimeStatus, getToolsStatus, restoreStateBackup, syncEmby } from "../lib/api";
 import { fileSize, formatTime } from "../lib/format";
@@ -81,6 +81,7 @@ function settingsDraft(settings: AppSettings) {
 
 export function SettingsPage({ state, stats, initialToolStatus, onSaveSettings, onToolStatusChange, onStateRestored, onNotify }: SettingsPageProps) {
   const [draft, setDraft] = useState(() => settingsDraft(state.settings));
+  const savedSettingsRef = useRef(settingsDraft(state.settings));
   const [activeTab, setActiveTab] = useStoredState<SettingsTab>("movie-hub.settings.activeTab", "system", { validate: isSettingsTab });
   const [toolStatus, setToolStatus] = useState<ToolsStatusResponse | null>(initialToolStatus ?? null);
   const [runtimeStatus, setRuntimeStatus] = useState<RuntimeStatusResponse | null>(null);
@@ -119,7 +120,17 @@ export function SettingsPage({ state, stats, initialToolStatus, onSaveSettings, 
   ];
 
   useEffect(() => {
-    setDraft(settingsDraft(state.settings));
+    const next = settingsDraft(state.settings);
+    const previous = savedSettingsRef.current;
+    if (Object.keys(next).every((key) => next[key as keyof typeof next] === previous[key as keyof typeof previous])) return;
+
+    savedSettingsRef.current = next;
+    // long：后台轮询会反复返回新的 settings 对象，只更新未编辑的字段，避免覆盖正在填写的 Emby 配置。
+    setDraft((current) => Object.fromEntries(
+      Object.keys(next).map((key) => [key, current[key as keyof typeof current] === previous[key as keyof typeof previous]
+        ? next[key as keyof typeof next]
+        : current[key as keyof typeof current]])
+    ) as typeof current);
   }, [state.settings]);
 
   useEffect(() => {
@@ -730,7 +741,7 @@ export function SettingsPage({ state, stats, initialToolStatus, onSaveSettings, 
                     label="Movie Hub 播放地址"
                     value={draft.embyBaseUrl}
                     onChange={(value) => setDraft({ ...draft, embyBaseUrl: value })}
-                    placeholder="http://192.168.1.2:8787"
+                    placeholder="http://192.168.1.2:4444"
                     hint="必须是 Emby 主机能访问的地址。"
                   />
                   <TextField

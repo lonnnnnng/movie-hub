@@ -8069,6 +8069,24 @@ a {
   padding: 0 12px;
 }
 
+/* long：Emby 开关独立于文本输入布局，避免继承全宽和文本框高度后挤乱选项行。 */
+.settings-form .toggle-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: var(--control-height);
+  padding: 0 12px;
+  border: 1px solid var(--line);
+}
+
+.settings-form .toggle-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  min-height: 18px;
+  padding: 0;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
 .source-editor-form textarea,
 .settings-form textarea {
   min-height: 96px;
